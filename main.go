@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"go-auth/database"
+	"go-auth/db"
 	"go-auth/routes"
 )
 
 func main() {
-	database.Connect()
+	db.Connect()
 
     app := fiber.New()
 

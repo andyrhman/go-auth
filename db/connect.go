@@ -1,4 +1,4 @@
-package database
+package db
 
 import (
 	"log"
@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"go-auth/models"
 )
 
 var DB *gorm.DB
@@ -31,6 +32,8 @@ func Connect(){
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
 	}
+
+	db.AutoMigrate(&models.User{}, &models.Token{})
 
 	log.Println("Connected to the database successfully!")
 }
