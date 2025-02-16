@@ -1,20 +1,20 @@
 package db
 
 import (
-	"log"
-	"os"
 	"github.com/joho/godotenv"
+	"go-auth/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"go-auth/models"
+	"log"
+	"os"
 )
 
 var DB *gorm.DB
 
-func Connect(){
+func Connect() {
 
 	err := godotenv.Load()
-	
+
 	if err != nil {
 		log.Println("Warning: No .env file found, using system environment variables")
 	}
@@ -33,7 +33,7 @@ func Connect(){
 		log.Fatal("Failed to connect to the database:", err)
 	}
 
-	db.AutoMigrate(&models.User{}, &models.Token{})
+	db.AutoMigrate(&models.User{}, &models.Token{}, &models.Reset{})
 
 	log.Println("Connected to the database successfully!")
 }
