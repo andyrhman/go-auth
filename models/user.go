@@ -5,10 +5,9 @@ import (
 )
 
 type User struct {
-	Id        uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	FirstName string
-	LastName  string
-	Email     string `gorm:"unique"`
-	Password  []byte
+	Id        uuid.UUID `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email" gorm:"unique"`
+	Password  []byte    `json:"-"`
 }
-

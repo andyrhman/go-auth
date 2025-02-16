@@ -23,3 +23,4 @@ func GenerateRefreshToken(userID uuid.UUID) (string, error) {
 	})
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET_REFRESH")))
 }
+

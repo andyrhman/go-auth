@@ -1,0 +1,45 @@
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+[build]
+  args_bin = []
+  bin = "./tmp/main"
+  cmd = "go build -o ./tmp/main ."
+  delay = 1500  # Slightly increased delay for better batch changes handling
+  exclude_dir = ["tmp", "vendor", "testdata", "public", "node_modules"]
+  exclude_file = []
+  exclude_regex = ["_test.go"]
+  exclude_unchanged = true   # Skip build if no changes
+  follow_symlink = false
+  full_bin = "./tmp/main"    # Important for Fiber to actually run
+  include_dir = []
+  include_ext = ["go", "html", "tmpl", "tpl", "js", "css", "env"]  # Added web extensions
+  kill_delay = "1s"          # Give Fiber time to shutdown gracefully
+  log = "build-errors.log"
+  send_interrupt = true      # Better for graceful shutdown
+  stop_on_error = true       # Stop on build errors
+
+[color]
+  app = ""
+  build = "yellow"
+  main = "cyan"
+  runner = "green"
+  watcher = "magenta"
+
+[log]
+  main_only = true    # Only show app logs
+  time = true         # Helpful for debugging
+
+[misc]
+  clean_on_exit = true # Clean tmp files on exit
+
+# Optional proxy setup (uncomment if needed)
+#[proxy]
+#  enabled = true
+#  app_port = 3000    # Your Fiber app port
+#  proxy_port = 8080  # Public facing port
+
+[screen]
+  clear_on_rebuild = true  # Clear screen on rebuild
+  keep_scroll = true
