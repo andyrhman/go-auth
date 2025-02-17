@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/pquerna/otp/totp"
 	"go-auth/utils"
 	"os"
 	"strings"
@@ -35,7 +36,7 @@ func Register(c *fiber.Ctx) error {
 	hashedPassword := utils.HashPassword(data["password"])
 
 	// Save user to database
-	user := models.User{
+	user := &models.User{
 		FirstName: data["first_name"],
 		LastName:  data["last_name"],
 		Email:     data["email"],
@@ -48,10 +49,16 @@ func Register(c *fiber.Ctx) error {
 }
 
 func Login(c *fiber.Ctx) error {
-	var data map[string]string
+	type LoginInput struct {
+		Email      string `json:"email"`
+		Password   string `json:"password"`
+		RememberMe bool   `json:"rememberMe"`
+	}
 
+	var data LoginInput
 	// Parse JSON body
 	if err := c.BodyParser(&data); err != nil {
+		fmt.Println(err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request body",
 		})
@@ -59,16 +66,36 @@ func Login(c *fiber.Ctx) error {
 
 	var user models.User
 
-	if err := db.DB.Where("email = ?", data["email"]).First(&user).Error; err != nil {
+	if err := db.DB.Where("email = ?", data.Email).First(&user).Error; err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Invalid email or password",
 		})
 	}
 
 	// Verify password
-	if !utils.VerifyPassword(string(user.Password), data["password"]) {
+	if !utils.VerifyPassword(string(user.Password), data.Password) {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Invalid email or password",
+		})
+	}
+
+	// Check if 2FA is already set up
+	if user.TFASecret != "" {
+		return c.JSON(fiber.Map{
+			"id":         user.Id.String(),
+			"rememberMe": data.RememberMe, // Tetap bool, bukan string
+		})
+	}
+
+	// Generate new 2FA secret if not exists
+	key, err := totp.Generate(totp.GenerateOpts{
+		Issuer:      "Go Auth",
+		AccountName: user.Email,
+		SecretSize:  20,
+	})
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Error generating 2FA secret",
 		})
 	}
 
@@ -104,7 +131,12 @@ func Login(c *fiber.Ctx) error {
 		Secure:   true,
 	})
 
-	return c.JSON(fiber.Map{"token": accessToken})
+	return c.JSON(fiber.Map{
+		"token":       accessToken,
+		"rememberMe":  data.RememberMe, // Tetap bool, bukan string
+		"secret":      key.Secret(),
+		"otpauth_url": key.URL(),
+	})
 }
 
 func AuthenticatedUser(c *fiber.Ctx) error {

@@ -10,4 +10,5 @@ type User struct {
 	LastName  string    `json:"last_name"`
 	Email     string    `json:"email" gorm:"unique"`
 	Password  []byte    `json:"-"`
+	TFASecret string    `gorm:"column:tfa_secret;default:''"`
 }
